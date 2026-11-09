@@ -14,22 +14,22 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
-// --- ROTAS ---
-app.get('/', (req, res) => {
-    res.send('API do Projeto B rodando com sucesso!');
-});
-
-app.get('/db', async (req, res) => {
+// Criar tabela automaticamente se não existir (essencial para CI e novos ambientes)
+const criarTabela = async () => {
     try {
-        const result = await pool.query('SELECT NOW()');
-        res.json({
-            mensagem: 'Conectado ao PostgreSQL com sucesso!',
-            horarioBanco: result.rows[0].now
-        });
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id SERIAL PRIMARY KEY,
+                nome VARCHAR(100) NOT NULL,
+                email VARCHAR(100) UNIQUE NOT NULL,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
     } catch (err) {
-        res.status(500).send('Erro na conexão com o banco: ' + err.message);
+        console.error('Erro ao criar tabela automaticamente:', err.message);
     }
-});
+};
+criarTabela();
 
 app.get('/usuarios', async (req, res) => {
     try {
