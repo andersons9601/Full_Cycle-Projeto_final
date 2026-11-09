@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: API Full Cycle - Projeto B
+  version: 1.0.0
+  description: Documentação OpenAPI do endpoint principal de usuários do Projeto B.
+paths:
+  /usuarios:
+    get:
+      summary: Lista todos os usuários cadastrados
+      responses:
+        '200':
+          description: Sucesso
+    post:
+      summary: Cadastra um novo usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                email:
+                  type: string
+      responses:
+        '201':
+          description: Criado com sucesso

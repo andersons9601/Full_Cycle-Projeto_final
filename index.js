@@ -1,4 +1,3 @@
-const http = require('http');
 const express = require('express');
 const { Pool } = require('pg');
 require('dotenv').config();
@@ -15,13 +14,11 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
-
-// Rota principal (mensagem de boas-vindas)
+// --- ROTAS ---
 app.get('/', (req, res) => {
-    res.send('API do AmbienteWeb rodando com sucesso!');
+    res.send('API do Projeto B rodando com sucesso!');
 });
 
-// Rota para testar a conexão com o banco de dados
 app.get('/db', async (req, res) => {
     try {
         const result = await pool.query('SELECT NOW()');
@@ -33,13 +30,6 @@ app.get('/db', async (req, res) => {
         res.status(500).send('Erro na conexão com o banco: ' + err.message);
     }
 });
-
-// Inicialização do servidor utilizando o Express
-const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
-});
-
 
 app.get('/usuarios', async (req, res) => {
     try {
@@ -70,21 +60,18 @@ app.post('/usuarios', async (req, res) => {
 
 app.put('/usuarios/:id', async (req, res) => {
     try {
-        const { id } = req.params; // Pega o ID passado na URL
-        const { nome, email } = req.body; // Pega os novos dados do corpo da requisição
+        const { id } = req.params;
+        const { nome, email } = req.body;
         if (!nome || !email) {
             return res.status(400).json({ erro: 'Nome e email são obrigatórios' });
         }
-
         const resultado = await pool.query(
             'UPDATE usuarios SET nome = $1, email = $2 WHERE id = $3 RETURNING *',
             [nome, email, id]
         );
-
         if (resultado.rows.length === 0) {
             return res.status(404).json({ erro: 'Usuário não encontrado' });
         }
-
         res.json(resultado.rows[0]);
     } catch (erro) {
         console.error(erro);
@@ -95,19 +82,26 @@ app.put('/usuarios/:id', async (req, res) => {
 app.delete('/usuarios/:id', async (req, res) => {
     try {
         const { id } = req.params;  
-
         const resultado = await pool.query(
             'DELETE FROM usuarios WHERE id = $1 RETURNING *',
             [id]
         );
-
         if (resultado.rows.length === 0) {
             return res.status(404).json({ erro: 'Usuário não encontrado' });
         }
-
         res.json({ mensagem: 'Usuário deletado com sucesso!' });
     } catch (erro) {
         console.error(erro);
         res.status(500).json({ erro: 'Erro ao deletar usuário' });
     }
 });
+
+// Inicialização condicional (não inicia o servidor HTTP durante os testes Jest)
+if (require.main === module) {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`Servidor rodando na porta ${PORT}`);
+    });
+}
+
+module.exports = app;

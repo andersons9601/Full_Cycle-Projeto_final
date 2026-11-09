@@ -21,7 +21,7 @@ services:
       POSTGRES_PASSWORD: senha_segura
       POSTGRES_DB: meu_banco
     ports:
-      - "5432:5432" # Para você gerenciar o banco do seu PC (DBeaver/VS Code)
+      - "5433:5432" # Para você gerenciar o banco do seu PC (DBeaver/VS Code)
     volumes:
       - db_data:/var/lib/postgresql/data # Salva os dados para não perder ao desligar
     healthcheck:
