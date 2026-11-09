@@ -5,7 +5,6 @@ require('dotenv').config();
 const app = express();
 app.use(express.json());
 
-// Configuração do pool de conexões
 const pool = new Pool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -14,7 +13,7 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
-// Criar tabela automaticamente se não existir (essencial para CI e novos ambientes)
+// Criar tabela automaticamente ao iniciar
 const criarTabela = async () => {
     try {
         await pool.query(`
@@ -30,6 +29,23 @@ const criarTabela = async () => {
     }
 };
 criarTabela();
+
+// --- ROTAS ---
+app.get('/', (req, res) => {
+    res.send('API do Projeto B rodando com sucesso!');
+});
+
+app.get('/db', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT NOW()');
+        res.json({
+            mensagem: 'Conectado ao PostgreSQL com sucesso!',
+            horarioBanco: result.rows[0].now
+        });
+    } catch (err) {
+        res.status(500).send('Erro na conexão com o banco: ' + err.message);
+    }
+});
 
 app.get('/usuarios', async (req, res) => {
     try {
@@ -96,7 +112,6 @@ app.delete('/usuarios/:id', async (req, res) => {
     }
 });
 
-// Inicialização condicional (não inicia o servidor HTTP durante os testes Jest)
 if (require.main === module) {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
